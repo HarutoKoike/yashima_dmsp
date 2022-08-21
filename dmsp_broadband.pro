@@ -13,9 +13,11 @@ days = INDGEN(days) + 1
 ;*---------- output file  ----------*
 ;
 ; 'F16_2010_01.txt'
-fn = 'F' + STRING(f, FORMAT='(I02)') + STRING(yyyy, FORMAT='(I4)') + $ 
+dir = '~/data/yashima_dmsp/'
+;
+fn = 'F' + STRING(f, FORMAT='(I02)')  + '_' + STRING(yyyy, FORMAT='(I4)') + $ 
      '_' + STRING(mm, FORMAT='(I02)') + '.txt'
-fn = '~/' + fn
+fn = dir + fn
 
 
 
@@ -34,7 +36,7 @@ FOREACH dd, days DO BEGIN
   ;
   ; load DMSP data
   dmsp = dmsp_load(f, yyyy, mm, dd)
-  IF ISA(dmsp, 'INT') THEN CONTINUE
+  IF ~ISA(dmsp, 'STRUCT') THEN CONTINUE
   ;
   t         = dmsp.t             ; time(UNIX time)
   mlt       = dmsp.mlt           ; MLT
@@ -56,7 +58,7 @@ FOREACH dd, days DO BEGIN
   IF MAX(duration) LT 3 THEN CONTINUE
   ;
   idx_st = idx_st[ WHERE(duration GE 3) ]
-  idx_ed = idx_et[ WHERE(duration GE 3) ]
+  idx_ed = idx_ed[ WHERE(duration GE 3) ]
   ;
   ut_start = time_string(t[idx_st])
   ut_end   = time_string(t[idx_ed])  ; '2000-01-01/00:00:00' format=(A19)
@@ -69,14 +71,14 @@ FOREACH dd, days DO BEGIN
   ; 6:MLT(maximum), 7:MLAT(maximum)
   ;
   FOR i = 0, N_ELEMENTS(idx_st) - 1 DO BEGIN
-    eflux95_max = MAX( eflux95[idx_st[i]:idx_et[i]], /NAN, idx_max )
+    eflux95_max = MAX( eflux95[idx_st[i]:idx_ed[i]], /NAN, idx_max )
     idx_max    += idx_st[i]
     ut_max      = time_string( t[idx_max] )
     mlt_max     = mlt[idx_max]
     mlat_max    = mlat[idx_max]
     ;
     PRINTF, lun, ut_start[i], ut_end[i], eflux95_max, ut_max, mlt_max, mlat_max, $
-            FORMAT='(A19, A19, E10.3, A19, F7.2, F7.2)'
+            FORMAT='(A19, A20, E10.3, A20, F7.2, F7.2)'
   ENDFOR
 
 ENDFOREACH
@@ -85,3 +87,27 @@ FREE_LUN, lun
 
 
 END
+
+
+
+
+
+
+
+
+years = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020]
+months = [1, 2, 10, 11, 12]
+
+foreach yr, years do begin
+	foreach mon, months do begin
+		dmsp_broadband, yr, mon, 16
+		dmsp_broadband, yr, mon, 17
+		dmsp_broadband, yr, mon, 18
+	endforeach
+endforeach
+
+end
+
+
+
+
