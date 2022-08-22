@@ -33,7 +33,7 @@ ref_eflux = 1.e9  ; 10^9 eV/eV cm^2 sr s ; electron differential energy flux
 ;
 ;
 FOREACH dd, days DO BEGIN
-  ;
+	;
   ; load DMSP data
   dmsp = dmsp_load(f, yyyy, mm, dd)
   IF ~ISA(dmsp, 'STRUCT') THEN CONTINUE
@@ -44,17 +44,19 @@ FOREACH dd, days DO BEGIN
   eflux95   = dmsp.jee[15, *]    ; 95eV  electron differential energy flux
   eflux139  = dmsp.jee[14, *]    ; 139eV electron differential energy flux
   ;
-  d_mlt   = ~(mlt GE 6. AND mlt LT 18)      ; 0<=MLT<=6 or 18<=MLT<=24 
+	;
+	; event search
+  d_mlt   = ~(mlt GT 6. AND mlt LT 18)      ; 0<=MLT<=6 or 18<=MLT<=24 
   d_mlat  = (mlat GE 68) AND (mlat LE 85)   ; 68 <= MLAT <= 85
   d_eflux = (eflux95 GE ref_eflux) AND (eflux139 GE ref_eflux) 
   ds      = d_mlt AND d_mlat AND d_eflux
-  ;
-  ds = [0, ds] - [ds, 0]
+	;
+  ds     = [0, ds] - [ds, 0]
   idx_st = WHERE(ds EQ -1, count)  ; start
   idx_ed = WHERE(ds EQ 1) - 1      ; end
   IF count EQ 0 THEN CONTINUE
   ;
-  duration = idx_ed - idx_st + 1    
+  duration = idx_ed - idx_st + 1
   IF MAX(duration) LT 3 THEN CONTINUE
   ;
   idx_st = idx_st[ WHERE(duration GE 3) ]
@@ -81,11 +83,10 @@ FOREACH dd, days DO BEGIN
             FORMAT='(A19, A20, E10.3, A20, F7.2, F7.2)'
   ENDFOR
 
+
 ENDFOREACH
-;
+
 FREE_LUN, lun
-
-
 END
 
 
