@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# path
+SELF_DIR=$(cd $(dirname $0); pwd)
+PARENT_DIR=$(dirname $SELF_DIR)
+
+IDL_STARTUP_OLD=$IDL_STARTUP
+IDL_STARTUP_NEW=${PARENT_DIR}/$(basename ${PARENT_DIR})_startup.pro
+
+
+# create idl statup file
+if [ ! -e $IDL_STARTUP_NEW ] ; then
+
+    touch $IDL_STARTUP_NEW
+
+    # !PROJECT system variable
+    echo "DEFSYSV, '!PROJECT', '${PARENT_DIR}'" >>  $IDL_STARTUP_NEW
+    
+    # default startup procedure
+    if [ -e "$IDL_STARTUP_DEFAULT" ] ; then
+        cat $IDL_STARTUP_DEFAULT >> $IDL_STARTUP_NEW    
+    fi
+fi
+
+
+# write default startup procedures
+
+
+# renew idl_startup
+export IDL_STARTUP=$IDL_STARTUP_NEW
+
+
+# renew IDL_PACKAGE_PATH (IDL system variable !PACKAGE_PATH)
+if [ -n $IDL_PACKAGE_PATH ] ; then
+  IDL_PACKAGE_PATH_OLD=$IDL_PACKAGE_PATH
+fi
+export IDL_PACKAGE_PATH=${PARENT_DIR}/.packages
+
+
+# create package directory
+if [ ! -e $IDL_PACKAGE_PATH ] ; then
+  mkdir $IDL_PACKAGE_PATH
+fi
+
+
+# create library directory
+#if [ ! -e ${PARENT_DIR}/lib ] ; then
+#  mkdir ${PARENT_DIR}/lib
+#fi
+
+
+# change prompt
+BASE="$(basename ${PWD})"
+export PS1_OLD=$PS1
+export PS1="(IDLENV) %~ "
+
+
+# delete IDL_PATH
+if [ -n $IDL_PATH ] ; then
+  export IDL_PATH_OLD=$IDL_PATH
+  unset IDL_PATH
+fi
+
+
+# new IDL_PATH
+DIR0=$(head -n 1 ${PARENT_DIR}/.idlenvcfg)
+export IDL_PATH="<IDL_DEFAULT>:${SELF_DIR}:${DIR0}:+${PARENT_DIR}"
+export IDL_PATH=${IDL_PATH}:${HOME}/.idl/idl/packages/idlenv
+
+
+
+# deactivate virtual environment
+function deactivate () {
+  export IDL_STARTUP=$IDL_STARTUP_OLD
+  export PS1=$PS1_OLD
+
+  if [ -n $IDL_PATH_OLD ] ; then 
+    export IDL_PATH=$IDL_PATH_OLD
+  fi
+
+  if [ -n $IDL_PACKAGE_PATH_OLD ] ; then 
+    export IDL_PACKAGE_PATH=$IDL_PACKAGE_PATH_OLD
+  fi
+
+  echo "deactivated"
+}

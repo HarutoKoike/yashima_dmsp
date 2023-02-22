@@ -13,11 +13,11 @@ days = INDGEN(days) + 1
 ;*---------- output file  ----------*
 ;
 ; 'F16_2010_01.txt'
-dir = '~/data/yashima_dmsp/'
+dir = filepath('data', root=selfpath(/path))
 ;
 fn = 'F' + STRING(f, FORMAT='(I02)')  + '_' + STRING(yyyy, FORMAT='(I4)') + $ 
      '_' + STRING(mm, FORMAT='(I02)') + '.txt'
-fn = dir + fn
+fn = filepath(fn, root=dir)
 
 
 
