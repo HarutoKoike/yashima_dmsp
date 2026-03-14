@@ -18,3 +18,5 @@ if getenv('USER') eq 'haruto' then $
 ;
 ; libraries
 import, '~/idl/spedas_5_0', /recur
+import, '~/idl/dmsp_load', /recur
+import, '~/idl/myidltools', /recur
